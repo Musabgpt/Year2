@@ -160,6 +160,8 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 	var maths_facts := [["What is the total?","Add the two numbers","Subtract the smaller number","Multiply the numbers","Arithmetic"],["Which operation shares equally?","Division","Addition only","Subtraction only","Division"],["What does the digit in the tens place represent?","Groups of ten","Single ones","Groups of one hundred","Place value"]]
 	var fact_groups: Array = [maths_facts, english_facts, science_facts, computing_facts, geography_facts, history_facts, music_facts, art_facts, dt_facts, pe_facts, wellbeing_facts]
 	var subjects := ["MATHS","ENGLISH","SCIENCE","COMPUTING","GEOGRAPHY","HISTORY","MUSIC","ART","DESIGN TECHNOLOGY","PE & HEALTH","WELLBEING"]
+	var child_names := ["Mia", "Ben", "Aisha", "Noah", "Zara", "Leo", "Amir", "Grace", "Ella", "Jayden"]
+	var situations := ["is learning in class and asks: ", "is exploring a garden and wonders: ", "is helping a friend and asks: ", "is reading a library book and asks: ", "is on a school trip and wonders: ", "is working with a team and asks: ", "is making a poster and asks: ", "is investigating a question and asks: ", "is explaining an idea and asks: ", "is exploring the playground and asks: "]
 	var serial := 0
 	# Generate unique retrieval-practice variants across the full subject mix.
 	while result.size() < 1000:
@@ -236,8 +238,6 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 			question_text = str(fact[0])
 			explanation_text = str(fact[4]) + " The correct choice is " + correct_answer + "."
 		if subject != "MATHS":
-			var child_names := ["Mia", "Ben", "Aisha", "Noah", "Zara", "Leo", "Amir", "Grace", "Ella", "Jayden"]
-			var situations := ["is learning in class and asks: ", "is exploring a garden and wonders: ", "is helping a friend and asks: ", "is reading a library book and asks: ", "is on a school trip and wonders: ", "is working with a team and asks: ", "is making a poster and asks: ", "is investigating a question and asks: ", "is explaining an idea and asks: ", "is exploring the playground and asks: "]
 			question_text = child_names[cycle % child_names.size()] + " " + situations[int(cycle / child_names.size()) % situations.size()] + question_text
 		var correct_index := options.find(correct_answer)
 		if correct_index < 0:
