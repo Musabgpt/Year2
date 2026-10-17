@@ -27,6 +27,8 @@ var jump_requested := false
 var questions: Array[Dictionary] = Year2CurriculumBank.all_questions()
 var answered_current := false
 var question_order: Array[int] = []
+var collectible_positions: Array[Vector2] = [Vector2(300, 365), Vector2(470, 335), Vector2(610, 370), Vector2(980, 355), Vector2(1210, 325), Vector2(1460, 360), Vector2(1710, 340)]
+var collected_positions: Array[int] = []
 
 var ui_layer: CanvasLayer
 var score_label: Label
@@ -92,6 +94,13 @@ func _process(delta: float) -> void:
 			player_velocity.y = 0.0
 			on_floor = true
 		camera_x = clampf(player_pos.x - get_viewport_rect().size.x * 0.38, 0.0, WORLD_WIDTH - get_viewport_rect().size.x)
+		for i in range(collectible_positions.size()):
+			if not collected_positions.has(i) and Vector2(player_pos.x, player_pos.y - 20.0).distance_to(collectible_positions[i]) < 48.0:
+				collected_positions.append(i)
+				score += 5
+				feedback = "Star collected! +5 ⭐"
+				feedback_timer = 1.2
+				_play_tone(990.0, 0.1)
 		if player_pos.x > 720.0 and not quiz_open and not gate_triggered:
 			gate_triggered = true
 			_open_quiz()
@@ -141,6 +150,20 @@ func _draw() -> void:
 		draw_rect(Rect2(gate_x + 10, 308, 76, 124), Color("#6e4b91"))
 		draw_circle(Vector2(gate_x + 48, 330), 12, Color("#f8e6a3"))
 		draw_string(ThemeDB.fallback_font, Vector2(gate_x - 14, 276), "LEARN", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("#ffe6a1"))
+	# Floating collectible stars.
+	for i in range(collectible_positions.size()):
+		if not collected_positions.has(i):
+			var star_pos := Vector2(collectible_positions[i].x - camera_x, collectible_positions[i].y + sin(Time.get_ticks_msec() * 0.003 + float(i)) * 5.0)
+			if star_pos.x > -30.0 and star_pos.x < view.x + 30.0:
+				draw_colored_polygon(_star_points(star_pos, 13.0, 6.0), Color("#ffd95c"))
+				draw_circle(star_pos, 3.0, Color("#fff4b2"))
+	# Friendly academy guide near the first building.
+	var guide_pos := Vector2(410.0 - camera_x, FLOOR_Y - 30.0)
+	if guide_pos.x > -40.0 and guide_pos.x < view.x + 40.0:
+		draw_circle(guide_pos + Vector2(0, -17), 15, Color("#9ed9ff"))
+		draw_circle(guide_pos + Vector2(-5, -19), 2.5, Color("#263b59"))
+		draw_circle(guide_pos + Vector2(5, -19), 2.5, Color("#263b59"))
+		draw_arc(guide_pos + Vector2(0, -14), 5, 0.2, PI - 0.2, 12, Color("#263b59"), 2.0)
 	# Player character with animated bob.
 	var p := Vector2(player_pos.x - camera_x, player_pos.y)
 	var bob := 0.0 if on_floor else sin(Time.get_ticks_msec() * 0.012) * 3.0
@@ -154,9 +177,20 @@ func _draw() -> void:
 	# Prompt and transient feedback.
 	if not quiz_open and player_pos.x < 720:
 		draw_string(ThemeDB.fallback_font, Vector2(24, 130), "WELCOME, EXPLORER!", HORIZONTAL_ALIGNMENT_LEFT, -1, 23, Color("#ffe7a2"))
-		draw_string(ThemeDB.fallback_font, Vector2(24, 160), "Move right to discover your first learning gate.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#d6e7ff"))
+		draw_string(ThemeDB.fallback_font, Vector2(24, 160), "Collect floating stars and discover the learning gate.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#d6e7ff"))
+	if not quiz_open and player_pos.x >= 720:
+		draw_string(ThemeDB.fallback_font, Vector2(24, 130), "KEEP EXPLORING!", HORIZONTAL_ALIGNMENT_LEFT, -1, 23, Color("#ffe7a2"))
+		draw_string(ThemeDB.fallback_font, Vector2(24, 160), "Use PRACTICE any time to open another challenge.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#d6e7ff"))
 	if feedback != "":
 		draw_string(ThemeDB.fallback_font, Vector2(view.x * 0.5 - 90, 205), feedback, HORIZONTAL_ALIGNMENT_CENTER, 260, 24, Color("#ffe7a2"))
+
+func _star_points(center: Vector2, outer_radius: float, inner_radius: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for i in range(10):
+		var angle := -PI / 2.0 + float(i) * PI / 5.0
+		var radius := outer_radius if i % 2 == 0 else inner_radius
+		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	return points
 
 func _build_ui() -> void:
 	ui_layer = CanvasLayer.new()
