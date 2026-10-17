@@ -20,6 +20,7 @@ var feedback_timer := 0.0
 var correct_streak := 0
 var last_voice_text := ""
 var hint_revealed := false
+var subject_filter := "ALL"
 var sound_enabled := true
 var move_left := false
 var move_right := false
@@ -42,6 +43,7 @@ var curriculum_label: Label
 var progress_label: Label
 var hint_button: Button
 var read_button: Button
+var subject_option: OptionButton
 var practice_button: Button
 var answer_buttons: Array[Button] = []
 var sound_button: Button
@@ -286,6 +288,14 @@ func _build_ui() -> void:
 	progress_label.add_theme_font_size_override("font_size", 13)
 	progress_label.add_theme_color_override("font_color", Color("#92612b"))
 	panel_box.add_child(progress_label)
+	subject_option = OptionButton.new()
+	subject_option.custom_minimum_size = Vector2(240, 38)
+	subject_option.add_item("All subjects", 0)
+	var curriculum_subjects := ["MATHS", "ENGLISH", "SCIENCE", "COMPUTING", "HISTORY", "GEOGRAPHY", "ART", "DESIGN TECHNOLOGY", "MUSIC", "PE & HEALTH", "WELLBEING"]
+	for subject_name in curriculum_subjects:
+		subject_option.add_item(subject_name.capitalize())
+	subject_option.item_selected.connect(_on_subject_selected)
+	panel_box.add_child(subject_option)
 	question_label = Label.new()
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -371,9 +381,20 @@ func _open_quiz() -> void:
 func _prepare_question_order() -> void:
 	question_order.clear()
 	for i in range(questions.size()):
-		question_order.append(i)
+		var subject_name := str(questions[i].get("subject", ""))
+		if subject_filter == "ALL" or subject_name == subject_filter:
+			question_order.append(i)
 	question_order.shuffle()
 	question_index = clampi(question_index, 0, maxi(0, question_order.size() - 1))
+
+func _on_subject_selected(index: int) -> void:
+	if index == 0:
+		subject_filter = "ALL"
+	else:
+		subject_filter = subject_option.get_item_text(index).to_upper()
+	question_index = 0
+	_prepare_question_order()
+	_show_question()
 
 func _current_question() -> Dictionary:
 	if questions.is_empty():
@@ -507,7 +528,8 @@ func _on_ai_question_ready(question: Dictionary) -> void:
 	question["id"] = str(question.get("id", "ai_" + str(Time.get_ticks_msec())))
 	question["strand"] = str(question.get("strand", "MusabAI practice"))
 	questions.append(question)
-	question_order.append(questions.size() - 1)
+	if subject_filter == "ALL" or str(question.get("subject", "")).to_upper() == subject_filter:
+		question_order.append(questions.size() - 1)
 	question_index = question_order.size() - 1
 	_show_question()
 	_play_tone(740.0, 0.12)
