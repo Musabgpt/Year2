@@ -167,10 +167,11 @@ fn draw_mascot(x: f32, y: f32, scale: f32, wave: bool) {
     draw_circle(x, y + 3.0 * scale, 34.0 * scale, Color::new(0.10, 0.20, 0.36, 0.12));
     draw_ellipse(x, y + 12.0 * scale, 25.0 * scale, 29.0 * scale, BLUE);
     draw_circle(x, y - 16.0 * scale, 25.0 * scale, Color::new(1.0, 0.78, 0.60, 1.0));
-    draw_arc(x, y - 18.0 * scale, 25.0 * scale, 0.0, 180.0, 1.0, 8.0 * scale, Color::new(0.25, 0.16, 0.12, 1.0));
+    draw_line(x - 18.0 * scale, y - 27.0 * scale, x + 18.0 * scale, y - 27.0 * scale, 5.0 * scale, Color::new(0.25, 0.16, 0.12, 1.0));
     draw_circle(x - 8.0 * scale, y - 17.0 * scale, 2.8 * scale, INK);
     draw_circle(x + 8.0 * scale, y - 17.0 * scale, 2.8 * scale, INK);
-    draw_arc(x, y - 10.0 * scale, 8.0 * scale, 200.0, 340.0, 1.0, 2.0 * scale, RED);
+    draw_line(x - 6.0 * scale, y - 8.0 * scale, x, y - 5.0 * scale, 2.0 * scale, RED);
+    draw_line(x, y - 5.0 * scale, x + 6.0 * scale, y - 8.0 * scale, 2.0 * scale, RED);
     draw_circle(x, y - 42.0 * scale, 24.0 * scale, PURPLE);
     draw_triangle(vec2(x - 18.0 * scale, y - 53.0 * scale), vec2(x + 18.0 * scale, y - 53.0 * scale), vec2(x, y - 68.0 * scale), GOLD);
     draw_circle(x + 22.0 * scale, y + 7.0 * scale, 8.0 * scale, Color::new(1.0, 0.78, 0.60, 1.0));
@@ -220,9 +221,9 @@ fn draw_top_bar(title: &str, sub: &str, sound_on: bool) -> bool {
 
 #[macroquad::main("Year 2 Adventure Academy")]
 async fn main() {
-    let success_sound: Sound = load_sound_from_bytes(&wav_tone(880.0, 0.16)).await;
-    let wrong_sound: Sound = load_sound_from_bytes(&wav_tone(220.0, 0.20)).await;
-    let tap_sound: Sound = load_sound_from_bytes(&wav_tone(540.0, 0.07)).await;
+    let success_sound: Sound = load_sound_from_bytes(&wav_tone(880.0, 0.16)).await.expect("load success sound");
+    let wrong_sound: Sound = load_sound_from_bytes(&wav_tone(220.0, 0.20)).await.expect("load wrong-answer sound");
+    let tap_sound: Sound = load_sound_from_bytes(&wav_tone(540.0, 0.07)).await.expect("load tap sound");
     let mut game = Game::new();
     loop {
         let w = screen_width(); let h = screen_height();
