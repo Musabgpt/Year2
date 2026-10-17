@@ -108,7 +108,7 @@ func _draw() -> void:
 		draw_circle(Vector2(sx, sy), 2.2, Color("#f7d98a"))
 	# Academy buildings.
 	for bx in [100.0, 500.0, 1020.0, 1510.0]:
-		var x := bx - camera_x
+		var x: float = float(bx) - camera_x
 		if x > -240 and x < view.x + 240:
 			draw_rect(Rect2(x, 210, 230, 220), Color("#304d70"))
 			draw_rect(Rect2(x - 12, 195, 254, 25), Color("#f1bd66"))
