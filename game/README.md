@@ -1,6 +1,6 @@
 # Year 2 Adventure Academy — Godot game
 
-This folder contains the initial Godot 4 project foundation on branch `feat/godot-adventure-foundation`.
+This folder contains the Godot 4 prototype on branch `feat/godot-adventure-foundation`.
 
 ## Open locally
 1. Install Godot 4.3 or a compatible Godot 4.x release.
@@ -8,16 +8,22 @@ This folder contains the initial Godot 4 project foundation on branch `feat/godo
 3. Run the main scene.
 
 ## Current foundation
-- A horizontally explorable academy scene drawn with Godot primitives.
+- Horizontally explorable academy scene drawn with Godot primitives.
 - Keyboard and on-screen movement/jump controls.
-- A local Year 2 question loop with maths, English and science examples.
-- Score tracking and a sound toggle UI.
+- Local Year 2 question bank for maths, English and science.
+- Score tracking and generated sound effects.
+- Reusable MusabAI adapter for OpenAI-compatible chat-completions APIs, ordered provider fallback and basic response validation.
 
-## Not yet implemented / not claimed as complete
-- MusabAI provider integration and automatic provider failover.
-- Spoken questions / Android Text-to-Speech.
-- Real audio assets and sound effects (the tone function is currently a placeholder).
-- Persistent progress, validated question generation, full curriculum coverage.
-- Android export configuration, APK build and device testing.
+## Configure MusabAI
+The game works offline without AI. The adapter reads `user://musab_ai.cfg`; see `musab_ai.example.cfg` for the format. Configure an endpoint, model ID and optional API key for each provider section (`provider_0`, `provider_1`, etc.). Providers are attempted in section order; failed or invalid responses advance to the next one.
 
-The first slice is deliberately offline-first. Provider integration should be added behind a dedicated adapter after the existing MusabAI interfaces and provider licences/quotas have been reviewed.
+- This does not guarantee a provider is free or available. Check current terms, quotas and endpoint format.
+- Do not commit real API keys. Keys packaged in an APK can be extracted; a private backend/proxy is safer for production.
+- Only OpenAI-compatible chat-completions responses are supported currently.
+
+## Not yet complete
+- The adapter is reusable but not yet wired into the visible game UI.
+- Native Android Text-to-Speech / spoken questions.
+- Full curriculum-aligned content and independent educational review.
+- Persistent progress and parent/teacher settings.
+- Android export templates, APK build, and real-device QA.
