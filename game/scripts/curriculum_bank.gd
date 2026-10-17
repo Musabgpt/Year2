@@ -157,14 +157,15 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 		["What can you do if you feel worried at school?","Talk to a trusted adult","Keep every worry secret","Be unkind to someone","A trusted adult can listen and help you decide what to do.","Feelings and relationships"],
 		["How can you help someone who is left out?","Invite them to join if it is safe","Laugh at them","Tell others to ignore them","Kindness and inclusion help people feel welcome.","Relationships"]
 	]
-	var fact_groups: Array = [english_facts, science_facts, computing_facts, geography_facts, history_facts, music_facts, art_facts, dt_facts, pe_facts, wellbeing_facts]
-	var subjects := ["ENGLISH","SCIENCE","COMPUTING","GEOGRAPHY","HISTORY","MUSIC","ART","DESIGN TECHNOLOGY","PE & HEALTH","WELLBEING"]
+	var maths_facts := [["What is the total?","Add the two numbers","Subtract the smaller number","Multiply the numbers","Arithmetic"],["Which operation shares equally?","Division","Addition only","Subtraction only","Division"],["What does the digit in the tens place represent?","Groups of ten","Single ones","Groups of one hundred","Place value"]]
+	var fact_groups: Array = [maths_facts, english_facts, science_facts, computing_facts, geography_facts, history_facts, music_facts, art_facts, dt_facts, pe_facts, wellbeing_facts]
+	var subjects := ["MATHS","ENGLISH","SCIENCE","COMPUTING","GEOGRAPHY","HISTORY","MUSIC","ART","DESIGN TECHNOLOGY","PE & HEALTH","WELLBEING"]
 	var serial := 0
-	# Generate 924 varied, uniquely worded practice items on top of the curated starter bank.
+	# Generate unique retrieval-practice variants across the full subject mix.
 	while result.size() < 1000:
-		var slot := serial % 10
+		var slot := serial % 11
 		var group: Array = fact_groups[slot]
-		var fact: Array = group[int((serial / 10) % group.size())]
+		var fact: Array = group[int((serial / 11) % group.size())]
 		var subject: String = subjects[slot]
 		var stem := str(fact[0])
 		var correct_answer := str(fact[1])
@@ -175,9 +176,42 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 		for rotate in range(shift):
 			options.push_back(options.pop_front())
 		var question_text := stem
+		var explanation_text := "The correct answer is " + correct_answer + ". " + str(fact[4]) + " is the key idea to remember."
 		# Make each practice item distinct while revisiting the same curriculum idea in a new retrieval format.
-		var cycle := int(serial / 10)
-		if subject == "ENGLISH":
+		var cycle := int(serial / 11)
+		if subject == "MATHS":
+			var a: int = 12 + ((cycle * 7) % 79)
+			var b: int = 2 + ((cycle * 5) % 38)
+			var operation: int = cycle % 4
+			var numeric_answer: int = 0
+			if operation == 0:
+				numeric_answer = a + b
+				question_text = "What is %d + %d?" % [a, b]
+				explanation_text = "%d + %d = %d. Add the tens and ones, then check your total." % [a, b, numeric_answer]
+			elif operation == 1:
+				if b > a:
+					var swap_value: int = a
+					a = b
+					b = swap_value
+				numeric_answer = a - b
+				question_text = "What is %d − %d?" % [a, b]
+				explanation_text = "%d − %d = %d. Subtraction tells us the difference between numbers." % [a, b, numeric_answer]
+			elif operation == 2:
+				a = 2 + (cycle % 10)
+				b = 2 + ((cycle * 3) % 10)
+				numeric_answer = a * b
+				question_text = "There are %d groups of %d. How many altogether?" % [a, b]
+				explanation_text = "%d groups of %d means %d × %d = %d." % [a, b, a, b, numeric_answer]
+			else:
+				a = 2 + (cycle % 9)
+				numeric_answer = a * b
+				question_text = "Share %d counters equally into %d groups. How many in each group?" % [numeric_answer, a]
+				explanation_text = "%d ÷ %d = %d because %d groups of %d make %d." % [numeric_answer, a, b, a, b, numeric_answer]
+			correct_answer = str(numeric_answer)
+			options = [correct_answer, str(numeric_answer + 1), str(maxi(0, numeric_answer - 1))]
+			wrong_one = str(numeric_answer + 1)
+			wrong_two = str(maxi(0, numeric_answer - 1))
+		elif subject == "ENGLISH":
 			var word: String = words[cycle % words.size()]
 			match cycle % 4:
 				0:
@@ -198,23 +232,11 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 					options = ["because","under","purple"]
 					correct_answer = "because"
 		elif subject == "SCIENCE":
-			question_text = str(fact[0]) + " (science check " + str(cycle + 1) + ")"
-		elif subject == "COMPUTING":
-			question_text = str(fact[0]) + " Try it in a new situation: " + ["at home","in class","while playing a game","when helping a friend"][cycle % 4] + "."
-		elif subject == "GEOGRAPHY":
-			question_text = str(fact[0]) + " Think about a place you might visit on a UK field trip."
-		elif subject == "HISTORY":
-			question_text = str(fact[0]) + " Explain which evidence would help you decide."
-		elif subject == "MUSIC":
-			question_text = str(fact[0]) + " Imagine you are listening carefully to a song."
-		elif subject == "ART":
-			question_text = str(fact[0]) + " Think like an artist planning a new picture."
-		elif subject == "DESIGN TECHNOLOGY":
-			question_text = str(fact[0]) + " Imagine you are designing something for school."
-		elif subject == "PE & HEALTH":
-			question_text = str(fact[0]) + " Choose the safest and fairest option."
-		elif subject == "WELLBEING":
-			question_text = str(fact[0]) + " Think about being kind and safe at school."
+			question_text = str(fact[0])
+			explanation_text = str(fact[4]) + " The best answer is " + correct_answer + "."
+		elif subject == "COMPUTING" or subject == "GEOGRAPHY" or subject == "HISTORY" or subject == "MUSIC" or subject == "ART" or subject == "DESIGN TECHNOLOGY" or subject == "PE & HEALTH" or subject == "WELLBEING":
+			question_text = str(fact[0])
+			explanation_text = str(fact[4]) + " The correct choice is " + correct_answer + "."
 		var correct_index := options.find(correct_answer)
 		if correct_index < 0:
 			correct_index = 0
@@ -238,7 +260,7 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 			"answers": final_answers,
 			"correct": correct_index,
 			"hint": "Think about the clue in the question. Can you explain your choice?",
-			"explanation": str(fact[4]) + ": " + str(fact[4]) + ". The correct answer is " + correct_answer + ". " + str(fact[4]) + " helps us understand this idea.",
+			"explanation": explanation_text,
 			"voice": question_text
 		})
 		serial += 1
