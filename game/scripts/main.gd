@@ -303,8 +303,7 @@ func _show_question() -> void:
 		answer_buttons[i].text = str(q["answers"][i])
 		answer_buttons[i].disabled = false
 	var voice_script := str(q.get("voice", q["question"]))
-	if voice_script == str(q["question"]):
-		voice_script += " Option A: " + str(q["answers"][0]) + ". Option B: " + str(q["answers"][1]) + ". Option C: " + str(q["answers"][2]) + "."
+	voice_script += " The answer choices are: " + str(q["answers"][0]) + ", " + str(q["answers"][1]) + ", or " + str(q["answers"][2]) + "."
 	_speak_text(voice_script)
 
 func _answer(index: int) -> void:
