@@ -1,0 +1,30 @@
+name: Godot Project Check
+
+on:
+  push:
+    branches: ["feat/godot-adventure-foundation"]
+    paths:
+      - "game/**"
+      - ".github/workflows/godot-check.yml"
+  pull_request:
+    paths:
+      - "game/**"
+      - ".github/workflows/godot-check.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Godot
+        uses: chickensoft-games/setup-godot@v1
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: false
+      - name: Validate project and scripts
+        run: godot --headless --editor --path game --quit
+      - name: Launch scene headlessly
+        run: godot --headless --path game --quit-after 3
