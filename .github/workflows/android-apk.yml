@@ -40,6 +40,9 @@ jobs:
 
           JAVA_BIN="$(readlink -f "$(command -v java)")"
           JAVA_HOME_DIR="$(dirname "$(dirname "$JAVA_BIN")")"
+          echo "JAVA_HOME=$JAVA_HOME_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
           keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
 
           cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
@@ -62,8 +65,12 @@ jobs:
       - name: Validate project scripts
         run: godot --headless --editor --path game --quit --verbose
 
-      - name: Export debug APK
-        run: godot --headless --path game --export-debug "Android" build/Year2Adventure.apk --verbose
+      - name: Export debug APK from initialized editor context
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Export from the editor context so Android platform validation runs with the initialized editor settings.
+          godot --headless --editor --path game --export-debug "Android" build/Year2Adventure.apk --quit --verbose
 
       - name: Verify APK exists and is a valid ZIP
         shell: bash
