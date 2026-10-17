@@ -1,0 +1,12 @@
+[package]
+name = "year2-adventure-academy"
+version = "0.1.0"
+authors = ["Musabgpt"]
+description = "Year 2 Adventure Academy"
+
+[package.metadata.android]
+package = "uk.co.musabgpt.year2adventure"
+label = "Year 2 Adventure Academy"
+orientation = "landscape"
+min_sdk_version = 26
+target_sdk_version = 35
