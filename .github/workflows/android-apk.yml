@@ -80,7 +80,6 @@ jobs:
           set -euxo pipefail
           test -s game/build/Year2Adventure.apk
           unzip -t game/build/Year2Adventure.apk
-          file game/build/Year2Adventure.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
