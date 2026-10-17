@@ -416,7 +416,7 @@ func _show_question() -> void:
 	explanation_label.visible = false
 	hint_button.text = "💡 Show hint"
 	curriculum_label.text = str(q.get("subject", "LEARNING")) + "  •  " + str(q.get("strand", "Practice"))
-	progress_label.text = "Question %d of %d     ⭐ %d     🔥 %d in a row" % [question_index + 1, questions.size(), score, correct_streak]
+	progress_label.text = "Question %d of %d     ⭐ %d     🔥 %d in a row" % [question_index + 1, question_order.size(), score, correct_streak]
 	question_label.text = str(q["question"])
 	hint_label.text = "Choose an answer, then learn why."
 	for i in range(answer_buttons.size()):
