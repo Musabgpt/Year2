@@ -254,6 +254,7 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 		for rotate in range(answer_shift):
 			final_answers.push_back(final_answers.pop_front())
 		correct_index = final_answers.find(correct_answer)
+		question_text = "Mission %03d: " % (serial + 1) + question_text
 		result.append({
 			"id": "gen_%04d" % serial,
 			"subject": subject,
