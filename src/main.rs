@@ -108,10 +108,10 @@ fn draw_world(step: u32, y: f32, width: f32) {
     // Original procedural character: head, body, arms and legs.
     draw_circle(player_x, road_y - 3.0, 10.0, Color::new(0.98, 0.75, 0.55, 1.0));
     draw_rectangle(player_x - 8.0, road_y + 7.0, 16.0, 20.0, BLUE);
-    draw_line(player_x - 5.0, road_y + 26.0, player_x - 10.0, road_y + 35.0, INK, 3.0);
-    draw_line(player_x + 5.0, road_y + 26.0, player_x + 10.0, road_y + 35.0, INK, 3.0);
-    draw_line(player_x - 7.0, road_y + 12.0, player_x - 14.0, road_y + 20.0, INK, 3.0);
-    draw_line(player_x + 7.0, road_y + 12.0, player_x + 14.0, road_y + 20.0, INK, 3.0);
+    draw_line(player_x - 5.0, road_y + 26.0, player_x - 10.0, road_y + 35.0, 3.0, INK);
+    draw_line(player_x + 5.0, road_y + 26.0, player_x + 10.0, road_y + 35.0, 3.0, INK);
+    draw_line(player_x - 7.0, road_y + 12.0, player_x - 14.0, road_y + 20.0, 3.0, INK);
+    draw_line(player_x + 7.0, road_y + 12.0, player_x + 14.0, road_y + 20.0, 3.0, INK);
     draw_text("ACADEMY GARDENS", 14.0, y + 18.0, 16.0, INK);
     draw_text(&format!("Step {}/6", step.min(6)), (width - 78.0).max(8.0), y + 18.0, 16.0, INK);
 }
