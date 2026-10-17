@@ -235,6 +235,10 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 		elif subject == "COMPUTING" or subject == "GEOGRAPHY" or subject == "HISTORY" or subject == "MUSIC" or subject == "ART" or subject == "DESIGN TECHNOLOGY" or subject == "PE & HEALTH" or subject == "WELLBEING":
 			question_text = str(fact[0])
 			explanation_text = str(fact[4]) + " The correct choice is " + correct_answer + "."
+		if subject != "MATHS":
+			var child_names := ["Mia", "Ben", "Aisha", "Noah", "Zara", "Leo", "Amir", "Grace", "Ella", "Jayden"]
+			var situations := ["is learning in class and asks: ", "is exploring a garden and wonders: ", "is helping a friend and asks: ", "is reading a library book and asks: ", "is on a school trip and wonders: ", "is working with a team and asks: ", "is making a poster and asks: ", "is investigating a question and asks: ", "is explaining an idea and asks: ", "is exploring the playground and asks: "]
+			question_text = child_names[cycle % child_names.size()] + " " + situations[int(cycle / child_names.size()) % situations.size()] + question_text
 		var correct_index := options.find(correct_answer)
 		if correct_index < 0:
 			correct_index = 0
