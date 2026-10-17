@@ -47,6 +47,7 @@ func _ready() -> void:
 	add_child(ai_client)
 	ai_client.question_ready.connect(_on_ai_question_ready)
 	ai_client.status_changed.connect(_on_ai_status_changed)
+	_load_progress()
 	_build_ui()
 	queue_redraw()
 
@@ -266,14 +267,19 @@ func _answer(index: int) -> void:
 	if index == int(q["correct"]):
 		score += 10
 		feedback = "Brilliant! +10 stars"
+		hint_label.text = "Correct! " + str(q.get("explanation", q["hint"]))
 		_play_tone(880.0, 0.18)
+		feedback_timer = 1.6
+		_speak_text(feedback)
+		_save_progress()
+		question_index += 1
+		_show_question()
 	else:
-		feedback = "Not yet! Try another answer."
+		feedback = "Nearly! Have another go."
+		hint_label.text = "Try again. Hint: " + str(q["hint"])
 		_play_tone(190.0, 0.18)
-	feedback_timer = 1.6
-	_speak_text(feedback)
-	question_index += 1
-	_show_question()
+		feedback_timer = 1.6
+		_speak_text(feedback)
 
 func _close_quiz() -> void:
 	quiz_open = false
@@ -331,3 +337,19 @@ func _speak_text(text_value: String) -> void:
 			chosen_voice = str(voice.get("id", chosen_voice))
 			break
 	DisplayServer.tts_speak(text_value, chosen_voice, 70, 1.0, 1.0, 0, true)
+
+func _load_progress() -> void:
+	var progress := ConfigFile.new()
+	if progress.load("user://progress.cfg") == OK:
+		score = int(progress.get_value("progress", "score", 0))
+		question_index = maxi(0, int(progress.get_value("progress", "question_index", 0)))
+
+func _save_progress() -> void:
+	var progress := ConfigFile.new()
+	progress.set_value("progress", "score", score)
+	progress.set_value("progress", "question_index", question_index)
+	progress.save("user://progress.cfg")
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		_save_progress()
