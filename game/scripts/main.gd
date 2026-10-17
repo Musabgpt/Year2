@@ -16,6 +16,9 @@ var question_index := 0
 var quiz_open := false
 var feedback := ""
 var feedback_timer := 0.0
+var correct_streak := 0
+var last_voice_text := ""
+var hint_revealed := false
 var sound_enabled := true
 var move_left := false
 var move_right := false
@@ -33,6 +36,9 @@ var hint_label: Label
 var explanation_label: Label
 var next_button: Button
 var curriculum_label: Label
+var progress_label: Label
+var hint_button: Button
+var read_button: Button
 var answer_buttons: Array[Button] = []
 var sound_button: Button
 var voice_button: Button
@@ -196,24 +202,40 @@ func _build_ui() -> void:
 	jump.button_down.connect(func(): jump_requested = true)
 	question_panel = PanelContainer.new()
 	question_panel.set_anchors_preset(Control.PRESET_CENTER)
-	question_panel.position = Vector2(-255, -245)
-	question_panel.size = Vector2(510, 490)
+	question_panel.position = Vector2(-270, -250)
+	question_panel.size = Vector2(540, 500)
+	question_panel.custom_minimum_size = Vector2(540, 500)
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color("#fffaf0")
+	panel_style.border_color = Color("#f5c76b")
+	panel_style.set_border_width_all(3)
+	panel_style.set_corner_radius_all(24)
+	panel_style.content_margin_left = 20
+	panel_style.content_margin_right = 20
+	panel_style.content_margin_top = 16
+	panel_style.content_margin_bottom = 16
+	question_panel.add_theme_stylebox_override("panel", panel_style)
 	question_panel.visible = false
 	root.add_child(question_panel)
 	var panel_box := VBoxContainer.new()
 	panel_box.add_theme_constant_override("separation", 12)
 	question_panel.add_child(panel_box)
 	var title := Label.new()
-	title.text = "ACADEMY CHALLENGE"
+	title.text = "🌟 LEARNING QUEST"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", Color("#5e3f90"))
+	title.add_theme_font_size_override("font_size", 25)
+	title.add_theme_color_override("font_color", Color("#51327c"))
 	panel_box.add_child(title)
 	curriculum_label = Label.new()
 	curriculum_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	curriculum_label.add_theme_font_size_override("font_size", 13)
 	curriculum_label.add_theme_color_override("font_color", Color("#536b83"))
 	panel_box.add_child(curriculum_label)
+	progress_label = Label.new()
+	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	progress_label.add_theme_font_size_override("font_size", 13)
+	progress_label.add_theme_color_override("font_color", Color("#92612b"))
+	panel_box.add_child(progress_label)
 	question_label = Label.new()
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -224,6 +246,20 @@ func _build_ui() -> void:
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint_label.add_theme_color_override("font_color", Color("#536b83"))
 	panel_box.add_child(hint_label)
+	var utility_row := HBoxContainer.new()
+	utility_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	utility_row.add_theme_constant_override("separation", 10)
+	panel_box.add_child(utility_row)
+	hint_button = Button.new()
+	hint_button.text = "💡 Show hint"
+	hint_button.custom_minimum_size = Vector2(145, 38)
+	hint_button.pressed.connect(_reveal_hint)
+	utility_row.add_child(hint_button)
+	read_button = Button.new()
+	read_button.text = "🔊 Read aloud"
+	read_button.custom_minimum_size = Vector2(145, 38)
+	read_button.pressed.connect(_read_current_question)
+	utility_row.add_child(read_button)
 	explanation_label = Label.new()
 	explanation_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	explanation_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -234,8 +270,17 @@ func _build_ui() -> void:
 	answer_buttons.clear()
 	for i in range(3):
 		var answer_button := Button.new()
-		answer_button.custom_minimum_size = Vector2(0, 43)
+		answer_button.custom_minimum_size = Vector2(0, 47)
 		answer_button.add_theme_font_size_override("font_size", 18)
+		var answer_style := StyleBoxFlat.new()
+		answer_style.bg_color = Color("#e8f2ff")
+		answer_style.border_color = Color("#a8c8ee")
+		answer_style.set_border_width_all(2)
+		answer_style.set_corner_radius_all(13)
+		answer_button.add_theme_stylebox_override("normal", answer_style)
+		var answer_hover := answer_style.duplicate() as StyleBoxFlat
+		answer_hover.bg_color = Color("#d3e6ff")
+		answer_button.add_theme_stylebox_override("hover", answer_hover)
 		answer_button.pressed.connect(_answer.bind(i))
 		panel_box.add_child(answer_button)
 		answer_buttons.append(answer_button)
@@ -294,17 +339,19 @@ func _show_question() -> void:
 		return
 	var q := _current_question()
 	answered_current = false
+	hint_revealed = false
 	next_button.visible = false
 	explanation_label.visible = false
-	curriculum_label.text = str(q.get("subject", "LEARNING")) + "  •  " + str(q.get("strand", "Practice")) + "  •  Question %d of %d" % [question_index + 1, questions.size()]
+	hint_button.text = "💡 Show hint"
+	curriculum_label.text = str(q.get("subject", "LEARNING")) + "  •  " + str(q.get("strand", "Practice"))
+	progress_label.text = "Question %d of %d     ⭐ %d     🔥 %d in a row" % [question_index + 1, questions.size(), score, correct_streak]
 	question_label.text = str(q["question"])
-	hint_label.text = "Think it through. Hint: " + str(q.get("hint", "Take your time."))
+	hint_label.text = "Choose an answer, then learn why."
 	for i in range(answer_buttons.size()):
 		answer_buttons[i].text = str(q["answers"][i])
 		answer_buttons[i].disabled = false
-	var voice_script := str(q.get("voice", q["question"]))
-	voice_script += " The answer choices are: " + str(q["answers"][0]) + ", " + str(q["answers"][1]) + ", or " + str(q["answers"][2]) + "."
-	_speak_text(voice_script)
+		answer_buttons[i].modulate = Color.WHITE
+	_read_current_question()
 
 func _answer(index: int) -> void:
 	if answered_current:
@@ -312,24 +359,45 @@ func _answer(index: int) -> void:
 	var q := _current_question()
 	if index == int(q["correct"]):
 		answered_current = true
+		correct_streak += 1
 		score += 10
 		feedback = "Brilliant! +10 stars"
 		hint_label.text = "Correct! You got it!"
 		explanation_label.text = "Why? " + str(q.get("explanation", q.get("hint", "Well done for thinking carefully.")))
 		explanation_label.visible = true
 		next_button.visible = true
-		for button in answer_buttons:
-			button.disabled = true
+		for i in range(answer_buttons.size()):
+			answer_buttons[i].disabled = true
+			if i == int(q["correct"]):
+				answer_buttons[i].modulate = Color("#a8edc3")
+		progress_label.text = "Correct! ⭐ %d points     🔥 %d in a row" % [score, correct_streak]
 		_play_tone(880.0, 0.18)
 		feedback_timer = 1.6
 		_speak_text("Correct! " + str(q.get("explanation", "Well done!")))
 		_save_progress()
 	else:
+		correct_streak = 0
+		answer_buttons[index].modulate = Color("#ffd2ce")
 		feedback = "Nearly! Have another go."
-		hint_label.text = "Not quite yet. Hint: " + str(q.get("hint", "Try a different answer."))
+		hint_label.text = "Not quite yet. Tap Show hint, then try again."
 		_play_tone(190.0, 0.18)
 		feedback_timer = 1.6
 		_speak_text("Not quite. " + str(q.get("hint", "Try another answer.")))
+
+func _reveal_hint() -> void:
+	var q := _current_question()
+	hint_revealed = true
+	hint_label.text = "💡 Hint: " + str(q.get("hint", "Take your time and look for a clue."))
+	hint_button.text = "💡 Hint shown"
+	_speak_text("Here is a hint. " + str(q.get("hint", "Think carefully.")))
+
+func _read_current_question() -> void:
+	if questions.is_empty():
+		return
+	var q := _current_question()
+	last_voice_text = str(q.get("question", ""))
+	last_voice_text += " The answer choices are: " + str(q["answers"][0]) + ", " + str(q["answers"][1]) + ", or " + str(q["answers"][2]) + "."
+	_speak_text(last_voice_text)
 
 func _next_question() -> void:
 	if not answered_current:
@@ -351,18 +419,28 @@ func _toggle_sound() -> void:
 	sound_button.text = "♪ SOUND ON" if sound_enabled else "♪ SOUND OFF"
 
 func _play_tone(frequency: float, duration: float) -> void:
-	if not sound_enabled or audio_playback == null:
+	if not sound_enabled:
 		return
 	var frame_count := int(AUDIO_SAMPLE_RATE * duration)
-	var samples := PackedVector2Array()
-	samples.resize(frame_count)
+	var pcm := PackedByteArray()
+	pcm.resize(frame_count * 2)
 	for i in range(frame_count):
 		var progress := float(i) / maxf(1.0, float(frame_count))
-		var envelope := minf(1.0, progress * 18.0) * (1.0 - progress) * 0.22
-		var wave := sin(TAU * frequency * float(i) / float(AUDIO_SAMPLE_RATE)) * envelope
-		samples[i] = Vector2(wave, wave)
-	if audio_playback.get_frames_available() >= frame_count:
-		audio_playback.push_buffer(samples)
+		var envelope := minf(1.0, progress * 18.0) * (1.0 - progress) * 0.25
+		var sample_value := int(clampf(sin(TAU * frequency * float(i) / float(AUDIO_SAMPLE_RATE)) * envelope, -1.0, 1.0) * 32767.0)
+		pcm[i * 2] = sample_value & 0xff
+		pcm[i * 2 + 1] = (sample_value >> 8) & 0xff
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = AUDIO_SAMPLE_RATE
+	wav.stereo = false
+	wav.data = pcm
+	var player := AudioStreamPlayer.new()
+	player.stream = wav
+	player.volume_db = -4.0
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
 
 func _request_ai_question() -> void:
 	var subjects := ["MATHS", "ENGLISH", "SCIENCE", "COMPUTING", "HISTORY", "GEOGRAPHY", "ART", "DESIGN TECHNOLOGY", "MUSIC", "PE & HEALTH", "WELLBEING"]
@@ -388,15 +466,20 @@ func _on_ai_status_changed(message: String) -> void:
 
 func _toggle_speech() -> void:
 	speech_enabled = not speech_enabled
-	voice_button.text = "VOICE ON" if speech_enabled else "VOICE OFF"
+	voice_button.text = "🔊 VOICE ON" if speech_enabled else "🔇 VOICE OFF"
 	if not speech_enabled:
 		DisplayServer.tts_stop()
+	else:
+		_speak_text("Voice is on. I will read the question and answer choices aloud.")
 
 func _speak_text(text_value: String) -> void:
 	if not speech_enabled:
 		return
 	var voices: Array = DisplayServer.tts_get_voices()
 	if voices.is_empty():
+		ai_status = "Speech voice unavailable. Enable Android Text-to-speech / Speech Services by Google."
+		if is_instance_valid(status_label):
+			status_label.text = ai_status
 		return
 	var chosen_voice := str(voices[0].get("id", ""))
 	for voice in voices:
@@ -404,7 +487,8 @@ func _speak_text(text_value: String) -> void:
 		if language.begins_with("en_gb") or language.begins_with("en-gb") or language == "en":
 			chosen_voice = str(voice.get("id", chosen_voice))
 			break
-	DisplayServer.tts_speak(text_value, chosen_voice, 70, 1.0, 1.0, 0, true)
+	# Godot TTS volume is 0.0–1.0, not a percentage.
+	DisplayServer.tts_speak(text_value, chosen_voice, 1.0, 1.0, 0.9, 1, true)
 
 func _load_progress() -> void:
 	var progress := ConfigFile.new()
