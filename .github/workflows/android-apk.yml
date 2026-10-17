@@ -40,7 +40,7 @@ jobs:
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
 
       - name: Run Rust tests
-        run: cargo test --locked
+        run: cargo test
 
       - name: Install APK packager
         run: cargo install cargo-quad-apk --locked
