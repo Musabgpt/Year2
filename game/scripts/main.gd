@@ -36,9 +36,15 @@ var answer_buttons: Array[Button] = []
 var sound_button: Button
 var audio_player: AudioStreamPlayer
 var audio_playback: AudioStreamGeneratorPlayback
+var ai_client: Node
+var ai_status := ""
 const AUDIO_SAMPLE_RATE := 22050
 
 func _ready() -> void:
+	ai_client = load("res://scripts/ai/musab_ai.gd").new()
+	add_child(ai_client)
+	ai_client.question_ready.connect(_on_ai_question_ready)
+	ai_client.status_changed.connect(_on_ai_status_changed)
 	_build_ui()
 	queue_redraw()
 
@@ -76,7 +82,7 @@ func _process(delta: float) -> void:
 		if player_pos.x > 720.0 and not quiz_open:
 			_open_quiz()
 	score_label.text = "⭐ %03d" % score
-	status_label.text = "Explore the academy  •  Find the glowing learning gate" if not quiz_open else "Learning challenge"
+	status_label.text = ai_status if ai_status != "" else ("Explore the academy  •  Find the glowing learning gate" if not quiz_open else "Learning challenge")
 	queue_redraw()
 
 func _input(event: InputEvent) -> void:
@@ -179,8 +185,8 @@ func _build_ui() -> void:
 	jump.button_down.connect(func(): jump_requested = true)
 	question_panel = PanelContainer.new()
 	question_panel.set_anchors_preset(Control.PRESET_CENTER)
-	question_panel.position = Vector2(-245, -165)
-	question_panel.size = Vector2(490, 330)
+	question_panel.position = Vector2(-245, -205)
+	question_panel.size = Vector2(490, 410)
 	question_panel.visible = false
 	root.add_child(question_panel)
 	var panel_box := VBoxContainer.new()
@@ -214,6 +220,11 @@ func _build_ui() -> void:
 	close_button.text = "Back to exploring"
 	close_button.pressed.connect(_close_quiz)
 	panel_box.add_child(close_button)
+	var ai_button := Button.new()
+	ai_button.text = "✨ Ask MusabAI for a new question"
+	ai_button.custom_minimum_size = Vector2(0, 43)
+	ai_button.pressed.connect(_request_ai_question)
+	panel_box.add_child(ai_button)
 
 func _make_button(parent: Control, text_value: String, at: Vector2, dimensions: Vector2) -> Button:
 	var button := Button.new()
@@ -276,3 +287,17 @@ func _play_tone(frequency: float, duration: float) -> void:
 		samples[i] = Vector2(wave, wave)
 	if audio_playback.get_frames_available() >= frame_count:
 		audio_playback.push_buffer(samples)
+
+func _request_ai_question() -> void:
+	var current: Dictionary = questions[question_index % questions.size()]
+	ai_client.request_question(str(current.get("subject", "MATHS")), 6)
+
+func _on_ai_question_ready(question: Dictionary) -> void:
+	questions.append(question)
+	question_index = questions.size() - 1
+	_show_question()
+	_play_tone(740.0, 0.12)
+
+func _on_ai_status_changed(message: String) -> void:
+	ai_status = message
+	status_label.text = message
