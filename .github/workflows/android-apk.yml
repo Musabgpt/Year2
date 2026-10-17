@@ -27,12 +27,12 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.95.0
         with:
           targets: aarch64-linux-android
 
       - name: Install Android NDK
-        run: sdkmanager "ndk;27.2.12479018"
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;28.2.13676358"
 
       - name: Configure Android NDK
         run: |
@@ -43,7 +43,7 @@ jobs:
         run: cargo test
 
       - name: Install APK packager
-        run: cargo install cargo-quad-apk --locked
+        run: cargo +1.95.0 install --git https://github.com/hoklims/cargo-quad-apk --locked
 
       - name: Build release APK
         run: cargo quad-apk build --release
