@@ -47,7 +47,7 @@ jobs:
         run: cargo test
 
       - name: Install APK packager
-        run: cargo +1.95.0 install --git https://github.com/hoklims/cargo-quad-apk --locked
+        run: cargo +1.95.0 install --git https://github.com/hoklims/cargo-quad-apk cargo-quad-apk --locked
 
       - name: Build release APK
         run: cargo quad-apk build --release
