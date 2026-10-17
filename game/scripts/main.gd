@@ -110,7 +110,7 @@ func _draw() -> void:
 	draw_rect(Rect2(0, FLOOR_Y + 3, view.x, 18), Color("#65c68a"))
 	for i in range(13):
 		var px := fposmod(float(i * 170) - camera_x, view.x + 170.0) - 80.0
-		draw_round_rect(Rect2(px, FLOOR_Y + 28, 92, 18), 8, Color("#38716b"))
+		draw_rect(Rect2(px, FLOOR_Y + 28, 92, 18), Color("#38716b"))
 	# Learning gate.
 	var gate_x := 790.0 - camera_x
 	if gate_x > -100 and gate_x < view.x + 100:
