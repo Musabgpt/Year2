@@ -20,18 +20,19 @@ var sound_enabled := true
 var move_left := false
 var move_right := false
 var jump_requested := false
-var questions := [
-	{"subject":"MATHS", "question":"What is 24 + 13?", "answers":["27", "37", "47"], "correct":1, "hint":"Add 20 + 10, then 4 + 3."},
-	{"subject":"ENGLISH", "question":"Which word is an adjective?", "answers":["quickly", "bright", "jump"], "correct":1, "hint":"An adjective describes a person, place or thing."},
-	{"subject":"SCIENCE", "question":"Which material is magnetic?", "answers":["wood", "plastic", "iron"], "correct":2, "hint":"Magnets attract some metals."},
-	{"subject":"MATHS", "question":"What is half of 18?", "answers":["8", "9", "10"], "correct":1, "hint":"Split 18 into two equal groups."}
-]
+var questions: Array[Dictionary] = Year2CurriculumBank.all_questions()
+var answered_current := false
+var question_order: Array[int] = []
+
 var ui_layer: CanvasLayer
 var score_label: Label
 var status_label: Label
 var question_panel: PanelContainer
 var question_label: Label
 var hint_label: Label
+var explanation_label: Label
+var next_button: Button
+var curriculum_label: Label
 var answer_buttons: Array[Button] = []
 var sound_button: Button
 var voice_button: Button
@@ -49,6 +50,7 @@ func _ready() -> void:
 	ai_client.status_changed.connect(_on_ai_status_changed)
 	_load_progress()
 	_build_ui()
+	_prepare_question_order()
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -194,8 +196,8 @@ func _build_ui() -> void:
 	jump.button_down.connect(func(): jump_requested = true)
 	question_panel = PanelContainer.new()
 	question_panel.set_anchors_preset(Control.PRESET_CENTER)
-	question_panel.position = Vector2(-245, -205)
-	question_panel.size = Vector2(490, 410)
+	question_panel.position = Vector2(-255, -245)
+	question_panel.size = Vector2(510, 490)
 	question_panel.visible = false
 	root.add_child(question_panel)
 	var panel_box := VBoxContainer.new()
@@ -207,6 +209,11 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 22)
 	title.add_theme_color_override("font_color", Color("#5e3f90"))
 	panel_box.add_child(title)
+	curriculum_label = Label.new()
+	curriculum_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	curriculum_label.add_theme_font_size_override("font_size", 13)
+	curriculum_label.add_theme_color_override("font_color", Color("#536b83"))
+	panel_box.add_child(curriculum_label)
 	question_label = Label.new()
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -217,6 +224,13 @@ func _build_ui() -> void:
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint_label.add_theme_color_override("font_color", Color("#536b83"))
 	panel_box.add_child(hint_label)
+	explanation_label = Label.new()
+	explanation_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	explanation_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	explanation_label.add_theme_font_size_override("font_size", 16)
+	explanation_label.add_theme_color_override("font_color", Color("#245b49"))
+	explanation_label.visible = false
+	panel_box.add_child(explanation_label)
 	answer_buttons.clear()
 	for i in range(3):
 		var answer_button := Button.new()
@@ -225,6 +239,12 @@ func _build_ui() -> void:
 		answer_button.pressed.connect(_answer.bind(i))
 		panel_box.add_child(answer_button)
 		answer_buttons.append(answer_button)
+	next_button = Button.new()
+	next_button.text = "Next question ➜"
+	next_button.custom_minimum_size = Vector2(0, 43)
+	next_button.visible = false
+	next_button.pressed.connect(_next_question)
+	panel_box.add_child(next_button)
 	var close_button := Button.new()
 	close_button.text = "Back to exploring"
 	close_button.pressed.connect(_close_quiz)
