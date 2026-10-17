@@ -34,6 +34,8 @@ var question_label: Label
 var hint_label: Label
 var answer_buttons: Array[Button] = []
 var sound_button: Button
+var voice_button: Button
+var speech_enabled := true
 var audio_player: AudioStreamPlayer
 var audio_playback: AudioStreamGeneratorPlayback
 var ai_client: Node
@@ -174,6 +176,12 @@ func _build_ui() -> void:
 	sound_button.size = Vector2(150, 42)
 	sound_button.pressed.connect(_toggle_sound)
 	root.add_child(sound_button)
+	voice_button = Button.new()
+	voice_button.text = "VOICE ON"
+	voice_button.position = Vector2(620, 16)
+	voice_button.size = Vector2(150, 42)
+	voice_button.pressed.connect(_toggle_speech)
+	root.add_child(voice_button)
 	# Large touch controls, also usable with a mouse in desktop testing.
 	var left := _make_button(root, "◀", Vector2(22, 438), Vector2(78, 78))
 	left.button_down.connect(func(): move_left = true)
@@ -247,6 +255,7 @@ func _open_quiz() -> void:
 func _show_question() -> void:
 	var q: Dictionary = questions[question_index % questions.size()]
 	question_label.text = str(q["question"])
+	_speak_text(str(q["question"]))
 	hint_label.text = "Hint: " + str(q["hint"])
 	for i in range(answer_buttons.size()):
 		answer_buttons[i].text = str(q["answers"][i])
@@ -262,6 +271,7 @@ func _answer(index: int) -> void:
 		feedback = "Not yet! Try another answer."
 		_play_tone(190.0, 0.18)
 	feedback_timer = 1.6
+	_speak_text(feedback)
 	question_index += 1
 	_show_question()
 
@@ -301,3 +311,23 @@ func _on_ai_question_ready(question: Dictionary) -> void:
 func _on_ai_status_changed(message: String) -> void:
 	ai_status = message
 	status_label.text = message
+
+func _toggle_speech() -> void:
+	speech_enabled = not speech_enabled
+	voice_button.text = "VOICE ON" if speech_enabled else "VOICE OFF"
+	if not speech_enabled:
+		DisplayServer.tts_stop()
+
+func _speak_text(text_value: String) -> void:
+	if not speech_enabled:
+		return
+	var voices: Array = DisplayServer.tts_get_voices()
+	if voices.is_empty():
+		return
+	var chosen_voice := str(voices[0].get("id", ""))
+	for voice in voices:
+		var language := str(voice.get("language", "")).to_lower()
+		if language.begins_with("en_gb") or language.begins_with("en-gb") or language == "en":
+			chosen_voice = str(voice.get("id", chosen_voice))
+			break
+	DisplayServer.tts_speak(text_value, chosen_voice, 70, 1.0, 1.0, 0, true)
