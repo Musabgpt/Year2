@@ -88,7 +88,7 @@ static func all_questions() -> Array[Dictionary]:
 	return result
 
 static func _append_generated_questions(result: Array[Dictionary]) -> void:
-	var words := ["apple", "bridge", "garden", "rabbit", "window", "planet", "pocket", "yellow", "school", "basket", "thunder", "careful", "bright", "family", "winter", "teacher", "market", "flower", "picture", "journey"]
+	var words := ["apple", "bridge", "garden", "rabbit", "window", "planet", "pocket", "school", "basket", "family", "winter", "teacher", "market", "flower", "picture", "journey", "pencil", "blanket", "kitten", "river"]
 	var science_facts := [
 		["Which part of a plant absorbs water?","Roots","Petals","Seeds","Roots take in water from the soil.","Plants"],
 		["Which material is transparent?","Clear glass","Brick","Wood","Transparent materials let light pass through so we can see through them.","Materials"],
