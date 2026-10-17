@@ -75,7 +75,7 @@ const QUESTIONS: [Question; 36] = [
     Question { subject: Subject::Science, prompt: "Which object is transparent?", choices: ["Brick wall", "Clear glass", "Wooden door", "Cardboard"], answer: 1, explanation: "Light passes through clear glass, so it is transparent.", hint: "You can see through it." },
 ];
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum Screen { Home, Play, Results }
 
 #[derive(Clone, Copy)]
@@ -165,7 +165,7 @@ fn fit_text(s: &str, max_width: f32, size: f32) -> String {
 fn draw_mascot(x: f32, y: f32, scale: f32, wave: bool) {
     // A friendly little explorer made from crisp vector shapes.
     draw_circle(x, y + 3.0 * scale, 34.0 * scale, Color::new(0.10, 0.20, 0.36, 0.12));
-    draw_ellipse(x, y + 12.0 * scale, 25.0 * scale, 29.0 * scale, BLUE);
+    draw_ellipse(x, y + 12.0 * scale, 25.0 * scale, 29.0 * scale, 0.0, BLUE);
     draw_circle(x, y - 16.0 * scale, 25.0 * scale, Color::new(1.0, 0.78, 0.60, 1.0));
     draw_line(x - 18.0 * scale, y - 27.0 * scale, x + 18.0 * scale, y - 27.0 * scale, 5.0 * scale, Color::new(0.25, 0.16, 0.12, 1.0));
     draw_circle(x - 8.0 * scale, y - 17.0 * scale, 2.8 * scale, INK);
@@ -333,7 +333,7 @@ async fn main() {
                 draw_mascot(w * 0.28, h * 0.48, (h / 460.0).clamp(0.72, 1.0), true);
                 label("YOU ARE A SUPER STAR!", w * 0.40, h * 0.34, 26.0, PURPLE);
                 label(&format!("You got {} out of {} correct", game.correct, game.question_order.len()), w * 0.40, h * 0.43, 21.0, INK);
-                let pct = if game.question_order.is_empty() { 0 } else { (game.correct * 100 / game.question_order.len() as u32) };
+                let pct = if game.question_order.is_empty() { 0 } else { game.correct * 100 / game.question_order.len() as u32 };
                 label(&format!("Score: {}%     Stars earned: {}     Best streak: {}", pct, game.stars, game.best_streak), w * 0.40, h * 0.51, 16.0, MUTED);
                 label(if pct >= 80 { "Amazing! You are ready for a new challenge." } else if pct >= 50 { "Great effort! Practise again to grow your skills." } else { "Every try helps you learn. Have another go!" }, w * 0.40, h * 0.59, 15.0, GREEN);
                 let again = Rect::new(w * 0.40, h * 0.68, w * 0.22, 42.0);
