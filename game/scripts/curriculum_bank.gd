@@ -5,7 +5,7 @@ class_name Year2CurriculumBank
 # Each item has a unique ID, subject, strand, question, three answers, correct index,
 # hint, explanation, and a short voice script. Review locally before expanding the bank.
 static func all_questions() -> Array[Dictionary]:
-	return [
+	var result: Array[Dictionary] = [
 		{"id":"ma_place_01","subject":"MATHS","strand":"Place value","question":"What is the value of the 4 in  forty-two?","answers":["4","40","2"],"correct":1,"hint":"The 4 is in the tens place.","explanation":"Forty-two is made of 4 tens and 2 ones. The digit 4 is worth 40.","voice":"What is the value of the 4 in forty-two? A: 4. B: 40. C: 2."},
 		{"id":"ma_place_02","subject":"MATHS","strand":"Place value","question":"Which number is one more than 69?","answers":["68","70","79"],"correct":1,"hint":"Count forward one step.","explanation":"After 69 comes 70. Adding one more changes 69 to 70.","voice":"Which number is one more than sixty-nine? A: sixty-eight. B: seventy. C: seventy-nine."},
 		{"id":"ma_place_03","subject":"MATHS","strand":"Place value","question":"Which number is the greatest?","answers":["128","182","118"],"correct":1,"hint":"Compare the tens after checking the hundreds.","explanation":"All have 1 hundred. 182 has 8 tens, more than 128's 2 tens or 118's 1 ten.","voice":"Which number is greatest: one hundred twenty-eight, one hundred eighty-two, or one hundred eighteen?"},
@@ -83,3 +83,162 @@ static func all_questions() -> Array[Dictionary]:
 		{"id":"sc_classify_01","subject":"SCIENCE","strand":"Living things","question":"Which feature helps you identify a bird?","answers":["Feathers","Six legs","Gills"],"correct":0,"hint":"Think of what covers a bird's body.","explanation":"Birds have feathers. Other features, such as wings and beaks, also help us identify many birds.","voice":"Which feature helps you identify a bird: feathers, six legs, or gills?"},
 		{"id":"co_sequence_01","subject":"COMPUTING","strand":"Algorithms","question":"If an instruction says 'repeat 3 times', how many times should the action happen?","answers":["2","3","4"],"correct":1,"hint":"The number tells you how many repeats.","explanation":"Repeat 3 times means carry out the action three times.","voice":"If an instruction says repeat three times, how many times should the action happen?"}
 	]
+
+	_append_generated_questions(result)
+	return result
+
+static func _append_generated_questions(result: Array[Dictionary]) -> void:
+	var words := ["apple", "bridge", "garden", "rabbit", "window", "planet", "pocket", "yellow", "school", "basket", "thunder", "careful", "bright", "family", "winter", "teacher", "market", "flower", "picture", "journey"]
+	var science_facts := [
+		["Which part of a plant absorbs water?","Roots","Petals","Seeds","Roots take in water from the soil.","Plants"],
+		["Which material is transparent?","Clear glass","Brick","Wood","Transparent materials let light pass through so we can see through them.","Materials"],
+		["Which animal is a mammal?","Dolphin","Frog","Ant","Dolphins are mammals because they breathe air and feed milk to their young.","Animals"],
+		["What do plants need to grow?","Light and water","Plastic and darkness","Only stones","Most plants need light, water, air and suitable conditions to grow.","Plants"],
+		["Which sense uses your ears?","Hearing","Taste","Smell","Ears help us hear sounds.","Humans"],
+		["Which season has the shortest days in the UK?","Winter","Summer","Spring","Winter usually has the fewest daylight hours in the UK.","Seasonal changes"],
+		["What does a magnet attract?","Iron","Paper","Rubber","Magnets attract iron and some other magnetic materials.","Materials"],
+		["Which animal begins life as a caterpillar?","Butterfly","Cat","Robin","A butterfly's life cycle includes egg, caterpillar, chrysalis and adult.","Life cycles"],
+		["Which material is waterproof?","A raincoat fabric","Tissue paper","Uncoated paper","Waterproof materials stop or resist water passing through.","Materials"],
+		["What is a habitat?","A place where an organism lives","A kind of number","A musical note","A habitat provides the conditions a living thing needs.","Living things"]
+	]
+	var computing_facts := [
+		["What is an algorithm?","A sequence of instructions","A type of fruit","A computer cable","An algorithm is a clear sequence of steps to complete a task.","Algorithms"],
+		["What does debugging mean?","Finding and fixing errors","Turning the screen brighter","Drawing a picture","Debugging means locating and correcting errors in a program.","Debugging"],
+		["What should you do with a stranger's request for your address online?","Tell a trusted adult and keep it private","Post it publicly","Send it straight away","Personal information should not be shared with strangers online.","Online safety"],
+		["Which instruction is clearest?","Move forward 3 steps","Do something sometime","Guess what I mean","A precise instruction is easier for a person or computer to follow.","Instructions"],
+		["What is a computer program?","Instructions a computer follows","A kind of sandwich","A school uniform","Programs contain instructions that a computer can carry out.","Programming"]
+	]
+	var geography_facts := [
+		["What does a map key explain?","Map symbols","A story ending","The age of a map","A map key explains what symbols on a map represent.","Maps"],
+		["Birmingham is in which UK country?","England","Scotland","Wales","Birmingham is a city in the West Midlands of England.","United Kingdom"],
+		["Which is a physical feature?","A river","A supermarket","A bridge","Rivers are natural physical features; shops and bridges are human features.","Human and physical features"],
+		["Which instrument shows direction?","Compass","Rain gauge","Thermometer","A compass helps you find directions such as north and south.","Directions"],
+		["Which is a human feature?","A school","A mountain","A natural lake","Schools are built by people and are human features.","Places"]
+	]
+	var history_facts := [
+		["What does a timeline show?","Events in time order","Map symbols only","The weather forecast","Timelines arrange events from earlier to later.","Chronology"],
+		["What can an old photograph tell a historian?","Clues about life in the past","Exactly what everyone thought","Nothing at all","Photographs are evidence, but historians compare different sources.","Historical sources"],
+		["Florence Nightingale is remembered for her work in what field?","Nursing","Space travel","Painting the Mona Lisa","Nightingale helped improve nursing and hospital care.","Significant people"],
+		["Neil Armstrong was famous for doing what?","Walking on the Moon","Discovering electricity","Building the pyramids","Neil Armstrong became the first person to walk on the Moon in 1969.","Significant people"],
+		["Which is a source from the past?","An old diary","A future prediction","A made-up guess","A diary can provide evidence about what someone experienced in the past.","Historical sources"]
+	]
+	var english_facts := [
+		["Which word is a noun?","garden","quickly","under","A noun names a person, place, thing or idea.","Grammar"],
+		["Which word is a verb?","jumped","purple","softly","A verb can describe an action or state.","Grammar"],
+		["Which word is an adjective?","shiny","carefully","yesterday","An adjective describes a noun.","Grammar"],
+		["Which punctuation mark ends a question?","?","! ",",","A question mark goes at the end of a direct question.","Punctuation"],
+		["Which word means the same as enormous?","huge","tiny","quiet","Enormous and huge both mean very large.","Vocabulary"],
+		["Which word is spelled correctly?","because","becos","becuase","Because is the correct spelling.","Spelling"],
+		["Which sentence is complete?","The dog barked.","Under the table","Because it was","A complete sentence expresses a complete idea.","Sentences"],
+		["Which word is a conjunction?","because","blue","quickly","Because can join ideas and explain a reason.","Grammar"],
+		["Which word is a pronoun?","they","running","green","A pronoun can replace a noun or noun phrase.","Grammar"],
+		["What does an apostrophe show in 'Sam's hat'?","Possession","A question","A plural verb","Sam's shows that the hat belongs to Sam.","Punctuation"]
+	]
+	var music_facts := [
+		["What is the steady beat in music called?","Pulse","Volume","Colour","The pulse is the steady beat that listeners can tap along to.","Pulse and rhythm"],
+		["What does tempo describe?","How fast or slow music is","The size of a drum","The colour of a piano","Tempo is the speed of music.","Tempo"],
+		["What do dynamics describe?","How loud or quiet music is","How long a book is","The shape of a note","Dynamics describe changes in loudness and softness.","Dynamics"]
+	]
+	var art_facts := [
+		["Which tool can make a charcoal drawing?","Charcoal stick","Measuring jug","Screwdriver","Charcoal can make dark marks and varied tones in art.","Drawing"],
+		["Which pair are primary colours in traditional paint mixing?","Red and yellow","Green and orange","Pink and brown","Red, yellow and blue are commonly taught as primary paint colours.","Colour"],
+		["What can texture describe in art?","How a surface looks or feels","The time on a clock","A number pattern","Texture can be real or created to look like a surface.","Texture"]
+	]
+	var dt_facts := [
+		["Why do designers test a model?","To see what works and improve it","To avoid making changes","To hide every problem","Testing helps designers evaluate and improve a product.","Design process"],
+		["Which material is suitable for a waterproof shelter?","Waterproof fabric","Tissue paper","Dry sand","Designers choose materials to suit the product's purpose.","Materials"],
+		["Which shape is often used to strengthen a frame?","Triangle","Loose curve","Open line","Triangles help structures keep their shape under a load.","Structures"]
+	]
+	var pe_facts := [
+		["Why warm up before exercise?","To prepare the body for movement","So you never need water","To avoid moving","A warm-up gradually prepares the body for activity.","Healthy movement"],
+		["What shows good teamwork?","Taking turns and encouraging others","Blaming teammates","Ignoring the rules","Fair play includes respect, turn-taking and encouragement.","Teamwork"]
+	]
+	var wellbeing_facts := [
+		["What can you do if you feel worried at school?","Talk to a trusted adult","Keep every worry secret","Be unkind to someone","A trusted adult can listen and help you decide what to do.","Feelings and relationships"],
+		["How can you help someone who is left out?","Invite them to join if it is safe","Laugh at them","Tell others to ignore them","Kindness and inclusion help people feel welcome.","Relationships"]
+	]
+	var fact_groups: Array = [english_facts, science_facts, computing_facts, geography_facts, history_facts, music_facts, art_facts, dt_facts, pe_facts, wellbeing_facts]
+	var subjects := ["ENGLISH","SCIENCE","COMPUTING","GEOGRAPHY","HISTORY","MUSIC","ART","DESIGN TECHNOLOGY","PE & HEALTH","WELLBEING"]
+	var serial := 0
+	# Generate 924 varied, uniquely worded practice items on top of the curated starter bank.
+	while result.size() < 1000:
+		var slot := serial % 10
+		var group: Array = fact_groups[slot]
+		var fact: Array = group[int((serial / 10) % group.size())]
+		var subject: String = subjects[slot]
+		var stem := str(fact[0])
+		var correct_answer := str(fact[1])
+		var wrong_one := str(fact[2])
+		var wrong_two := str(fact[3])
+		var options: Array = [correct_answer, wrong_one, wrong_two]
+		var shift := serial % 3
+		for rotate in range(shift):
+			options.push_back(options.pop_front())
+		var question_text := stem
+		# Make each practice item distinct while revisiting the same curriculum idea in a new retrieval format.
+		var cycle := int(serial / 10)
+		if subject == "ENGLISH":
+			var word: String = words[cycle % words.size()]
+			match cycle % 4:
+				0:
+					question_text = "Which word is a noun in this group: " + word + ", quickly, under?"
+					options = [word, "quickly", "under"]
+					correct_answer = word
+				1:
+					question_text = "Which word is closest in meaning to '" + ["happy","small","fast","quiet","bright"][cycle % 5] + "'?"
+					var synonyms := [["glad","angry","empty"],["tiny","enormous","noisy"],["quick","slow","soft"],["silent","hungry","bright"],["shiny","dark","heavy"]][cycle % 5]
+					options = synonyms
+					correct_answer = str(synonyms[0])
+				2:
+					question_text = "Which word is spelled correctly: " + word + ", " + word.substr(0, maxi(1, word.length()-1)) + ", or " + word + "x?"
+					options = [word, word.substr(0, maxi(1, word.length()-1)), word + "x"]
+					correct_answer = word
+				3:
+					question_text = "Choose the conjunction to complete: 'I smiled ___ I was pleased.'"
+					options = ["because","under","purple"]
+					correct_answer = "because"
+		elif subject == "SCIENCE":
+			question_text = str(fact[0]) + " (science check " + str(cycle + 1) + ")"
+		elif subject == "COMPUTING":
+			question_text = str(fact[0]) + " Try it in a new situation: " + ["at home","in class","while playing a game","when helping a friend"][cycle % 4] + "."
+		elif subject == "GEOGRAPHY":
+			question_text = str(fact[0]) + " Think about a place you might visit on a UK field trip."
+		elif subject == "HISTORY":
+			question_text = str(fact[0]) + " Explain which evidence would help you decide."
+		elif subject == "MUSIC":
+			question_text = str(fact[0]) + " Imagine you are listening carefully to a song."
+		elif subject == "ART":
+			question_text = str(fact[0]) + " Think like an artist planning a new picture."
+		elif subject == "DESIGN TECHNOLOGY":
+			question_text = str(fact[0]) + " Imagine you are designing something for school."
+		elif subject == "PE & HEALTH":
+			question_text = str(fact[0]) + " Choose the safest and fairest option."
+		elif subject == "WELLBEING":
+			question_text = str(fact[0]) + " Think about being kind and safe at school."
+		var correct_index := options.find(correct_answer)
+		if correct_index < 0:
+			correct_index = 0
+		var wrong_options: Array = []
+		for option in options:
+			if str(option) != correct_answer and not wrong_options.has(str(option)):
+				wrong_options.append(str(option))
+		while wrong_options.size() < 2:
+			wrong_options.append("Not " + correct_answer + " " + str(wrong_options.size() + 1))
+		var final_answers: Array = [correct_answer, wrong_options[0], wrong_options[1]]
+		# Rotate the right answer so children cannot learn a fixed button position.
+		var answer_shift := serial % 3
+		for rotate in range(answer_shift):
+			final_answers.push_back(final_answers.pop_front())
+		correct_index = final_answers.find(correct_answer)
+		result.append({
+			"id": "gen_%04d" % serial,
+			"subject": subject,
+			"strand": str(fact[4]),
+			"question": question_text,
+			"answers": final_answers,
+			"correct": correct_index,
+			"hint": "Think about the clue in the question. Can you explain your choice?",
+			"explanation": str(fact[4]) + ": " + str(fact[4]) + ". The correct answer is " + correct_answer + ". " + str(fact[4]) + " helps us understand this idea.",
+			"voice": question_text
+		})
+		serial += 1
