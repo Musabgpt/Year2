@@ -28,3 +28,5 @@ jobs:
         run: godot --headless --editor --path game --quit
       - name: Launch scene headlessly
         run: godot --headless --path game --quit-after 3
+      - name: Validate the 1000-question curriculum bank
+        run: godot --headless --path game --script res://scripts/curriculum_validation.gd
