@@ -212,14 +212,63 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn movement_advances_on_correct_and_retreats_on_wrong() {
-        assert_eq!(1_u32.saturating_add(1), 2);
-        assert_eq!(1_u32.saturating_sub(1), 0);
+    fn correct_answer_advances_exactly_one_step() {
+        let mut game = Game::new();
+        game.selected = Some(QUESTIONS[0].answer);
+        game.submit();
+        assert_eq!(game.player_step, 1);
+        assert_eq!(game.correct, 1);
+        assert!(game.submitted);
     }
 
     #[test]
-    fn wrong_answer_at_zero_stays_at_zero() {
-        assert_eq!(0_u32.saturating_sub(1), 0);
+    fn incorrect_answer_retreats_exactly_one_step() {
+        let mut game = Game::new();
+        game.player_step = 3;
+        game.selected = Some((QUESTIONS[0].answer + 1) % 4);
+        game.submit();
+        assert_eq!(game.player_step, 2);
+    }
+
+    #[test]
+    fn incorrect_answer_at_zero_stays_at_zero() {
+        let mut game = Game::new();
+        game.selected = Some((QUESTIONS[0].answer + 1) % 4);
+        game.submit();
+        assert_eq!(game.player_step, 0);
+    }
+
+    #[test]
+    fn repeated_submit_does_not_apply_movement_twice() {
+        let mut game = Game::new();
+        game.selected = Some(QUESTIONS[0].answer);
+        game.submit();
+        game.submit();
+        assert_eq!(game.player_step, 1);
+        assert_eq!(game.attempts, 1);
+    }
+
+    #[test]
+    fn no_answer_does_not_submit() {
+        let mut game = Game::new();
+        game.submit();
+        assert_eq!(game.player_step, 0);
+        assert_eq!(game.attempts, 0);
+        assert!(!game.submitted);
+    }
+
+    #[test]
+    fn next_question_resets_submission_state() {
+        let mut game = Game::new();
+        game.selected = Some(QUESTIONS[0].answer);
+        game.submit();
+        game.next_question();
+        assert_eq!(game.question_index, 1);
+        assert!(!game.submitted);
+        assert_eq!(game.selected, None);
+        assert_eq!(game.feedback, None);
     }
 }
