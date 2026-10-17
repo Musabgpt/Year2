@@ -14,6 +14,7 @@ var camera_x := 0.0
 var score := 0
 var question_index := 0
 var quiz_open := false
+var gate_triggered := false
 var feedback := ""
 var feedback_timer := 0.0
 var correct_streak := 0
@@ -39,6 +40,7 @@ var curriculum_label: Label
 var progress_label: Label
 var hint_button: Button
 var read_button: Button
+var practice_button: Button
 var answer_buttons: Array[Button] = []
 var sound_button: Button
 var voice_button: Button
@@ -90,7 +92,8 @@ func _process(delta: float) -> void:
 			player_velocity.y = 0.0
 			on_floor = true
 		camera_x = clampf(player_pos.x - get_viewport_rect().size.x * 0.38, 0.0, WORLD_WIDTH - get_viewport_rect().size.x)
-		if player_pos.x > 720.0 and not quiz_open:
+		if player_pos.x > 720.0 and not quiz_open and not gate_triggered:
+			gate_triggered = true
 			_open_quiz()
 	score_label.text = "⭐ %03d" % score
 	status_label.text = ai_status if ai_status != "" else ("Explore the academy  •  Find the glowing learning gate" if not quiz_open else "Learning challenge")
@@ -191,6 +194,12 @@ func _build_ui() -> void:
 	voice_button.size = Vector2(150, 42)
 	voice_button.pressed.connect(_toggle_speech)
 	root.add_child(voice_button)
+	practice_button = Button.new()
+	practice_button.text = "🎯 PRACTICE"
+	practice_button.position = Vector2(450, 16)
+	practice_button.size = Vector2(150, 42)
+	practice_button.pressed.connect(_open_quiz)
+	root.add_child(practice_button)
 	# Large touch controls, also usable with a mouse in desktop testing.
 	var left := _make_button(root, "◀", Vector2(22, 438), Vector2(78, 78))
 	left.button_down.connect(func(): move_left = true)
@@ -347,7 +356,8 @@ func _show_question() -> void:
 	var q := _current_question()
 	answered_current = false
 	hint_revealed = false
-	next_button.visible = false
+	next_button.visible = true
+	next_button.text = "Skip / next ➜"
 	explanation_label.visible = false
 	hint_button.text = "💡 Show hint"
 	curriculum_label.text = str(q.get("subject", "LEARNING")) + "  •  " + str(q.get("strand", "Practice"))
@@ -373,6 +383,7 @@ func _answer(index: int) -> void:
 		explanation_label.text = "Why? " + str(q.get("explanation", q.get("hint", "Well done for thinking carefully.")))
 		explanation_label.visible = true
 		next_button.visible = true
+		next_button.text = "Next question ➜"
 		for i in range(answer_buttons.size()):
 			answer_buttons[i].disabled = true
 			if i == int(q["correct"]):
@@ -407,8 +418,7 @@ func _read_current_question() -> void:
 	_speak_text(last_voice_text)
 
 func _next_question() -> void:
-	if not answered_current:
-		return
+	# Children can move on after trying, without getting trapped on one question.
 	question_index += 1
 	if question_index >= question_order.size():
 		question_index = 0
@@ -419,7 +429,8 @@ func _next_question() -> void:
 func _close_quiz() -> void:
 	quiz_open = false
 	question_panel.visible = false
-	player_pos.x = maxf(player_pos.x, 730.0)
+	gate_triggered = true
+	player_pos.x = maxf(player_pos.x, 850.0)
 
 func _toggle_sound() -> void:
 	sound_enabled = not sound_enabled
