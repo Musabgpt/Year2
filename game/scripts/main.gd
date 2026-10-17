@@ -273,33 +273,74 @@ func _open_quiz() -> void:
 	_show_question()
 	_play_tone(520.0, 0.12)
 
+func _prepare_question_order() -> void:
+	question_order.clear()
+	for i in range(questions.size()):
+		question_order.append(i)
+	question_order.shuffle()
+	question_index = clampi(question_index, 0, maxi(0, question_order.size() - 1))
+
+func _current_question() -> Dictionary:
+	if questions.is_empty():
+		return {}
+	if question_order.is_empty():
+		_prepare_question_order()
+	return questions[question_order[question_index % question_order.size()]]
+
 func _show_question() -> void:
-	var q: Dictionary = questions[question_index % questions.size()]
+	if questions.is_empty():
+		question_label.text = "Let's create your first learning question!"
+		hint_label.text = "Connect MusabAI or add questions to the curriculum bank."
+		return
+	var q := _current_question()
+	answered_current = false
+	next_button.visible = false
+	explanation_label.visible = false
+	curriculum_label.text = str(q.get("subject", "LEARNING")) + "  •  " + str(q.get("strand", "Practice")) + "  •  Question %d of %d" % [question_index + 1, questions.size()]
 	question_label.text = str(q["question"])
-	_speak_text(str(q["question"]))
-	hint_label.text = "Hint: " + str(q["hint"])
+	hint_label.text = "Think it through. Hint: " + str(q.get("hint", "Take your time."))
 	for i in range(answer_buttons.size()):
 		answer_buttons[i].text = str(q["answers"][i])
 		answer_buttons[i].disabled = false
+	var voice_script := str(q.get("voice", q["question"]))
+	if voice_script == str(q["question"]):
+		voice_script += " Option A: " + str(q["answers"][0]) + ". Option B: " + str(q["answers"][1]) + ". Option C: " + str(q["answers"][2]) + "."
+	_speak_text(voice_script)
 
 func _answer(index: int) -> void:
-	var q: Dictionary = questions[question_index % questions.size()]
+	if answered_current:
+		return
+	var q := _current_question()
 	if index == int(q["correct"]):
+		answered_current = true
 		score += 10
 		feedback = "Brilliant! +10 stars"
-		hint_label.text = "Correct! " + str(q.get("explanation", q["hint"]))
+		hint_label.text = "Correct! You got it!"
+		explanation_label.text = "Why? " + str(q.get("explanation", q.get("hint", "Well done for thinking carefully.")))
+		explanation_label.visible = true
+		next_button.visible = true
+		for button in answer_buttons:
+			button.disabled = true
 		_play_tone(880.0, 0.18)
 		feedback_timer = 1.6
-		_speak_text(feedback)
+		_speak_text("Correct! " + str(q.get("explanation", "Well done!")))
 		_save_progress()
-		question_index += 1
-		_show_question()
 	else:
 		feedback = "Nearly! Have another go."
-		hint_label.text = "Try again. Hint: " + str(q["hint"])
+		hint_label.text = "Not quite yet. Hint: " + str(q.get("hint", "Try a different answer."))
 		_play_tone(190.0, 0.18)
 		feedback_timer = 1.6
-		_speak_text(feedback)
+		_speak_text("Not quite. " + str(q.get("hint", "Try another answer.")))
+
+func _next_question() -> void:
+	if not answered_current:
+		return
+	question_index += 1
+	if question_index >= question_order.size():
+		question_index = 0
+		question_order.shuffle()
+	_save_progress()
+	_show_question()
 
 func _close_quiz() -> void:
 	quiz_open = false
@@ -325,12 +366,20 @@ func _play_tone(frequency: float, duration: float) -> void:
 		audio_playback.push_buffer(samples)
 
 func _request_ai_question() -> void:
-	var current: Dictionary = questions[question_index % questions.size()]
-	ai_client.request_question(str(current.get("subject", "MATHS")), 6)
+	var subjects := ["MATHS", "ENGLISH", "SCIENCE", "COMPUTING", "HISTORY", "GEOGRAPHY", "ART", "DESIGN TECHNOLOGY", "MUSIC", "PE & HEALTH", "WELLBEING"]
+	var subject := subjects[randi() % subjects.size()]
+	ai_client.request_question(subject, 6)
 
 func _on_ai_question_ready(question: Dictionary) -> void:
+	for existing in questions:
+		if str(existing.get("question", "")).strip_edges().to_lower() == str(question.get("question", "")).strip_edges().to_lower():
+			ai_status = "That question already exists. Ask MusabAI for another one."
+			return
+	question["id"] = str(question.get("id", "ai_" + str(Time.get_ticks_msec())))
+	question["strand"] = str(question.get("strand", "MusabAI practice"))
 	questions.append(question)
-	question_index = questions.size() - 1
+	_prepare_question_order()
+	question_index = question_order.size() - 1
 	_show_question()
 	_play_tone(740.0, 0.12)
 
