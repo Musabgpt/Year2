@@ -31,7 +31,7 @@ jobs:
           # Install the SDK components Godot's Android exporter actually needs.
           SDKMANAGER="$(command -v sdkmanager)"
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
-          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-33" "build-tools;33.0.2" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-33" "build-tools;33.0.2" "platforms;android-34" "build-tools;34.0.0" "ndk;23.2.8568313" "cmake;3.10.2.4988404"
 
           # Install the exact export templates matching the pinned Godot 4.3 engine.
           wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O /tmp/godot-templates.tpz
@@ -59,18 +59,20 @@ jobs:
           test -x "$JAVA_HOME_DIR/bin/java"
           test -f "$ANDROID_HOME/platforms/android-33/android.jar"
           test -d "$ANDROID_HOME/build-tools/33.0.2"
+          test -d "$ANDROID_HOME/ndk/23.2.8568313"
+          test -d "$ANDROID_HOME/cmake/3.10.2.4988404"
           test -s "$HOME/.android/debug.keystore"
           test -s "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
 
       - name: Validate project scripts
         run: godot --headless --editor --path game --quit --verbose
 
-      - name: Export debug APK from initialized editor context
+      - name: Export debug APK
         shell: bash
         run: |
           set -euxo pipefail
-          # Export from the editor context so Android platform validation runs with the initialized editor settings.
-          godot --headless --editor --path game --export-debug "Android" build/Year2Adventure.apk --quit --verbose
+          # Run the export as a standalone headless process; do not combine --editor and --export.
+          godot --headless --path game --export-debug "Android" build/Year2Adventure.apk --verbose
 
       - name: Verify APK exists and is a valid ZIP
         shell: bash
