@@ -5,6 +5,16 @@ edition = "2021"
 authors = ["Musabgpt"]
 description = "Offline 2D educational adventure for Year 2 pupils"
 
+[package.metadata.android]
+package_name = "uk.co.musabgpt.year2adventure"
+label = "Year 2 Adventure Academy"
+android_version = 35
+target_sdk_version = 35
+min_sdk_version = 26
+version_code = 1
+version_name = "0.1.0"
+build_targets = ["aarch64-linux-android"]
+
 [dependencies]
 macroquad = "0.4"
 
