@@ -189,10 +189,8 @@ static func _append_generated_questions(result: Array[Dictionary]) -> void:
 				question_text = "What is %d + %d?" % [a, b]
 				explanation_text = "%d + %d = %d. Add the tens and ones, then check your total." % [a, b, numeric_answer]
 			elif operation == 1:
-				if b > a:
-					var swap_value: int = a
-					a = b
-					b = swap_value
+				if b >= a:
+					a = b + 1
 				numeric_answer = a - b
 				question_text = "What is %d − %d?" % [a, b]
 				explanation_text = "%d − %d = %d. Subtraction tells us the difference between numbers." % [a, b, numeric_answer]
