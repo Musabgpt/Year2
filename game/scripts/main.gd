@@ -217,9 +217,16 @@ func _build_ui() -> void:
 	question_panel.add_theme_stylebox_override("panel", panel_style)
 	question_panel.visible = false
 	root.add_child(question_panel)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	question_panel.add_child(scroll)
 	var panel_box := VBoxContainer.new()
-	panel_box.add_theme_constant_override("separation", 12)
-	question_panel.add_child(panel_box)
+	panel_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel_box.add_theme_constant_override("separation", 6)
+	scroll.add_child(panel_box)
 	var title := Label.new()
 	title.text = "🌟 LEARNING QUEST"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
