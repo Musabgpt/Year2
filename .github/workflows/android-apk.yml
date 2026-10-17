@@ -66,10 +66,40 @@ jobs:
           test -s "$APK"
           echo "path=$APK" >> "$GITHUB_OUTPUT"
 
+      - name: Align and sign APK
+        id: sign
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD_TOOLS="$ANDROID_SDK_ROOT/build-tools/35.0.0"
+          INPUT_APK="${{ steps.apk.outputs.path }}"
+          ALIGNED_APK="$RUNNER_TEMP/year2-adventure-academy-aligned.apk"
+          SIGNED_APK="$RUNNER_TEMP/year2-adventure-academy.apk"
+          KEYSTORE="$RUNNER_TEMP/year2-debug.keystore"
+
+          "$BUILD_TOOLS/zipalign" -f -p 4 "$INPUT_APK" "$ALIGNED_APK"
+          keytool -genkeypair -noprompt -v \
+            -keystore "$KEYSTORE" \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-key-alias androiddebugkey \
+            --ks-pass pass:android \
+            --key-pass pass:android \
+            --out "$SIGNED_APK" "$ALIGNED_APK"
+          "$BUILD_TOOLS/apksigner" verify --verbose "$SIGNED_APK"
+          test -s "$SIGNED_APK"
+          echo "path=$SIGNED_APK" >> "$GITHUB_OUTPUT"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: year2-adventure-academy-apk
-          path: ${{ steps.apk.outputs.path }}
+          path: ${{ steps.sign.outputs.path }}
           if-no-files-found: error
           retention-days: 14
