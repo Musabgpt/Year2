@@ -34,6 +34,9 @@ var question_label: Label
 var hint_label: Label
 var answer_buttons: Array[Button] = []
 var sound_button: Button
+var audio_player: AudioStreamPlayer
+var audio_playback: AudioStreamGeneratorPlayback
+const AUDIO_SAMPLE_RATE := 22050
 
 func _ready() -> void:
 	_build_ui()
@@ -141,6 +144,14 @@ func _build_ui() -> void:
 	var root := Control.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui_layer.add_child(root)
+	audio_player = AudioStreamPlayer.new()
+	var generator := AudioStreamGenerator.new()
+	generator.mix_rate = AUDIO_SAMPLE_RATE
+	generator.buffer_length = 0.25
+	audio_player.stream = generator
+	add_child(audio_player)
+	audio_player.play()
+	audio_playback = audio_player.get_stream_playback() as AudioStreamGeneratorPlayback
 	score_label = Label.new()
 	score_label.position = Vector2(20, 16)
 	score_label.add_theme_font_size_override("font_size", 23)
@@ -253,8 +264,15 @@ func _toggle_sound() -> void:
 	sound_button.text = "♪ SOUND ON" if sound_enabled else "♪ SOUND OFF"
 
 func _play_tone(frequency: float, duration: float) -> void:
-	if not sound_enabled:
+	if not sound_enabled or audio_playback == null:
 		return
-	# Placeholder until platform TTS/audio assets are integrated; keep gameplay independent.
-	# This deliberately avoids claiming spoken questions are implemented.
-	pass
+	var frame_count := int(AUDIO_SAMPLE_RATE * duration)
+	var samples := PackedVector2Array()
+	samples.resize(frame_count)
+	for i in range(frame_count):
+		var progress := float(i) / maxf(1.0, float(frame_count))
+		var envelope := minf(1.0, progress * 18.0) * (1.0 - progress) * 0.22
+		var wave := sin(TAU * frequency * float(i) / float(AUDIO_SAMPLE_RATE)) * envelope
+		samples[i] = Vector2(wave, wave)
+	if audio_playback.get_frames_available() >= frame_count:
+		audio_playback.push_buffer(samples)
