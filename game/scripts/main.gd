@@ -367,7 +367,7 @@ func _play_tone(frequency: float, duration: float) -> void:
 
 func _request_ai_question() -> void:
 	var subjects := ["MATHS", "ENGLISH", "SCIENCE", "COMPUTING", "HISTORY", "GEOGRAPHY", "ART", "DESIGN TECHNOLOGY", "MUSIC", "PE & HEALTH", "WELLBEING"]
-	var subject := subjects[randi() % subjects.size()]
+	var subject: String = str(subjects[randi() % subjects.size()])
 	ai_client.request_question(subject, 6)
 
 func _on_ai_question_ready(question: Dictionary) -> void:
