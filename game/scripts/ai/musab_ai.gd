@@ -49,7 +49,7 @@ func _ask_provider(provider: Dictionary, subject: String, age: int) -> Dictionar
 	var endpoint := str(provider["endpoint"])
 	if not endpoint.begins_with("https://") and not endpoint.begins_with("http://127.0.0.1"):
 		return {}
-	var prompt := "Create one age-appropriate UK Year 2 question for a child aged %d. Subject: %s. Return JSON with keys subject, question, answers, correct, hint, explanation. answers must be exactly 3 short strings; correct is integer 0-2. Use clear British English, no trick questions." % [age, subject]
+	var prompt := "Create one original age-appropriate England National Curriculum Key Stage 1 Year 2 question for a child aged %d. Subject: %s. Rotate across the full subject curriculum and cover a specific strand, not just arithmetic. Return JSON with keys subject, strand, question, answers, correct, hint, explanation, voice. answers must be exactly 3 short strings; correct is integer 0-2. explanation must teach WHY the answer is correct in child-friendly British English, in 1-3 short sentences. hint must help without giving the answer away. voice should be a natural spoken version of the question and all three answer options. Avoid repeated/common questions, ambiguous answers, unsafe content and trick questions." % [age, subject]
 	var payload := {"model": provider["model"], "messages": [{"role": "system", "content": "You are MusabAI, a careful primary-school learning coach. Output valid JSON only."}, {"role": "user", "content": prompt}], "temperature": 0.7}
 	var headers := PackedStringArray(["Content-Type: application/json"])
 	var key := str(provider.get("api_key", ""))
@@ -80,4 +80,4 @@ func _ask_provider(provider: Dictionary, subject: String, age: int) -> Dictionar
 	for answer in answers:
 		if str(answer).strip_edges().is_empty():
 			return {}
-	return {"subject": str(parsed.get("subject", subject)).to_upper(), "question": str(parsed["question"]), "answers": answers, "correct": correct, "hint": str(parsed.get("hint", "Take your time and think carefully.")), "explanation": str(parsed.get("explanation", "Well done for trying!"))}
+	return {"subject": str(parsed.get("subject", subject)).to_upper(), "question": str(parsed["question"]), "answers": answers, "correct": correct, "hint": str(parsed.get("hint", "Take your time and think carefully.")), "explanation": str(parsed.get("explanation", "Well done for trying!")), "strand": str(parsed.get("strand", "Practice")), "voice": str(parsed.get("voice", parsed.get("question", "")))}
