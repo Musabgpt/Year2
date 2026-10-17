@@ -378,7 +378,7 @@ func _on_ai_question_ready(question: Dictionary) -> void:
 	question["id"] = str(question.get("id", "ai_" + str(Time.get_ticks_msec())))
 	question["strand"] = str(question.get("strand", "MusabAI practice"))
 	questions.append(question)
-	_prepare_question_order()
+	question_order.append(questions.size() - 1)
 	question_index = question_order.size() - 1
 	_show_question()
 	_play_tone(740.0, 0.12)
