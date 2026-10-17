@@ -1,0 +1,36 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: ["feat/godot-adventure-foundation"]
+    paths:
+      - "game/**"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare output directory
+        run: mkdir -p build
+      - name: Validate project
+        run: godot --headless --editor --path game --quit
+      - name: Export debug APK
+        run: godot --headless --path game --export-debug "Android" build/Year2Adventure.apk
+      - name: Verify APK exists
+        run: test -s build/Year2Adventure.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Year2Adventure-Android-APK
+          path: build/Year2Adventure.apk
+          if-no-files-found: error
+          retention-days: 14
